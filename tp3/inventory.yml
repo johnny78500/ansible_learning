@@ -1,0 +1,13 @@
+[machines:children]
+machine_1
+machine_2
+machine_3
+
+[machine_1]
+ansible_host=10.0.0.75
+
+[machine_2]
+ansible_host=10.0.0.76
+
+[machine_3]
+ansible_host=10.0.0.79

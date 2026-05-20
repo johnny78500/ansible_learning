@@ -1,7 +1,7 @@
 ---
 # Playbook pour configurer un serveur web
 - name: Install apache2
-  hosts: all
+  hosts: machines
   remote_user: root
 
   vars:
@@ -10,16 +10,16 @@
       - "mysql-server"
 
   tasks:
+    - name: Gather the package facts
+      ansible.builtin.package_facts:
+        manager: auto
+    
     - name: Installer services
       apt:
         name: "{{ item }}"
         state: absent
       loop: "{{ package_name }}"
 
-    - name: Gather the package facts
-      ansible.builtin.package_facts:
-        manager: auto
-    
     - name: edit html
       ansible.builtin.copy:
         src: index.html
