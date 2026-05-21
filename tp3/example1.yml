@@ -5,24 +5,46 @@
   remote_user: root
 
   vars:
-    package_name: 
+    services1: 
       - "apache2"
       - "mysql-server"
+    services2:
+      - "git"
+      - "nginx"
+      - "cowsay"
 
   tasks:
-    - name: Gather the package facts
-      ansible.builtin.package_facts:
+    - name: Gather facts
+      ansible.builtin.gather_facts:
         manager: auto
+      register: facts
     
     - name: Installer services
       apt:
         name: "{{ item }}"
         state: absent
-      loop: "{{ package_name }}"
+      loop: "{{ services1 }}"
+      when: group=group1
+
+    - name: Installer services2
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ services2 }}"
+
+    - name: Installer ufw
+      apt:
+        name: ufw
+        state: present
+      when: ansible_distribution == "ubuntu"
+
+    - name: Gather package facts
+      ansible.builtin.package_facts:
+        manager: auto
 
     - name: edit html
       ansible.builtin.copy:
-        src: index.html
+        src: "hello from "
         dest: /var/www/html/index.html
       when: "'apache2' in ansible_facts.packages"
 
