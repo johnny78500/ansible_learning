@@ -1,7 +1,7 @@
 ---
 # Playbook pour configurer un serveur web
 - name: Install apache2
-  hosts: machines
+  hosts: all
   remote_user: root
 
   vars:
@@ -16,27 +16,27 @@
   tasks:
     - name: Gather facts
       ansible.builtin.gather_facts:
-        manager: auto
       register: facts
     
     - name: Installer services
       apt:
         name: "{{ item }}"
-        state: absent
+        state: present
       loop: "{{ services1 }}"
-      when: group=group1
+      when: "'group1' in group_names"
 
     - name: Installer services2
       apt:
         name: "{{ item }}"
         state: present
       loop: "{{ services2 }}"
+      when: "'group2' in group_names"
 
     - name: Installer ufw
       apt:
         name: ufw
         state: present
-      when: ansible_distribution == "ubuntu"
+      when: ansible_facts["distribution"] == "ubuntu"
 
     - name: Gather package facts
       ansible.builtin.package_facts:
@@ -44,8 +44,22 @@
 
     - name: edit html
       ansible.builtin.copy:
-        src: "hello from "
+        content: "hello from {{ ansible_hostname }}"
         dest: /var/www/html/index.html
-      when: "'apache2' in ansible_facts.packages"
+      when: "'apache2' in ansible_facts.packages or 'nginx' in ansible_facts.packages"
 
+    - name: restart webservices
+      ansible.builtin.service:
+        name: "apache2"
+        state: restarted
+      when: "'group1' in group_names"
 
+    - name: restart webservices
+      ansible.builtin.service:
+        name: "nginx"
+        state: restarted
+      when: "'group2' in group_names"
+
+    - name: Run debug
+      ansible.builtin.debug:
+        var: ansible_date_time
